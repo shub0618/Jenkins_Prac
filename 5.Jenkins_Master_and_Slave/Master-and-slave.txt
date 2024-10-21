@@ -1,0 +1,60 @@
+Okay, now let's see how it works. Okay, first we'll add a Linux node. So, I'm going to launch an EC2 instance, and we'll pick up, let's say, Ubuntu operating system, Ubuntu 18. 
+Any Linux machine is fine. I will just name it as Slave-Jenkins. And I'll create a different security group, Slave-SG. And I will set 22 from my IP first, but later we are going to edit this rule again. I'll use the same key, jenkins-key. 
+Okay, let's log in and complete the prerequisites. So I'm using the same jenkins-key. Ubuntu is the user. Okay, first I am going to install a Java. So I'm going to run apt update && apt install openjdk -: 11 -: jdk -: y.
+apt update && apt install openjdk-11-jdk -y
+So we need JDK 11 for this one. Let's hit Enter. Okay, that is installed. 
+Now let's create a user. I will give user name as devops,  useradd devops passwd devops and we'll set a password to it. Okay, you know what? Userdel -r devops (if you followed the step) I will not add it like this. This is Ubuntu machine. It will not create the home directory for the user. So I'll run the command adduser devops.
+adduser devops
+Okay, so I created a user. Now I'm going to create a directory. And let's say I will do it on, in opt directory. I will say jenkins-slave.
+mkdir /opt/Jenkins-slave
+I will give ownership to the DevOps user that I created and the DevOps group to this directory. If there's already an existing directory, you already have some data, then you give recursive permission.
+chowm devops.devops /opt/Jenkins-slave -R	
+Okay, now one last thing. Jenkins from Jenkins, we are going to add this node with SSH, and we'll do first password-based login. By default, in the AWS AMI, for Linux, password-based login will be disabled. So we are going to edit this file etc/ssh/sshd_config, and we'll enable password login for SSH.
+Vim /etc/ssh/ssh_config
+Find an entry which says password authentication. Yeah, there. And from no, change it to yes. Okay, password authentication, you have to say yes. Save and quit. And then we are going to restart the SSH service. So in Ubuntu, the service name is just SSH, but if it's Red Hat, it will be SSHD. So, just SSH.
+Systemctl restart ssh
+Okay, that is because Jenkins is going to do SSH to this node, okay? Or the slave, right? And that's why we created that user.
+
+And we are doing first password-based login. We'll also see key-based login later. So let's go to Jenkins.
+Manage Jenkins. Yeah, there is the system configuration. You have Managed Nodes and Clouds. So let's click on it. And let's say create new node. Let's give this node a name. I will name it as silver-node. Ah, just a name.
+Permanent Agent.
+Okay, number of executors. How many job you want to run on this parallelly? So by default, this option is one. Maybe I want to run, let's say, five jobs parallelly. Maybe this is a very good node with lot of RAM and CPU. Okay, a remote route directory.
+So that will be the directory that we created. opt/Jenkins-slave
+Label, I'm going to say, just SILVER.
+Now, usage. Now this is based on your use case. If you want to use this for load distribution, then you keep, use this node as much as possible.
+But if you are being selective, like it's a Windows machine, you want to run only on Windows build. So you can select the second option. Then in the job, you have to make sure the job runs on that particular node, okay?
+I'll keep it. Use this node as much as possible. 
+Launch agent and their different methods, okay, to launch. So we have a Linux machine, so best way is SSH. But for Windows, it will be different. We'll see that.
+Okay, IP address of our slaves. So I will get the private IP. But when I'm doing that private IP, I have to update the security group rule I have to set it inbound rule. And I'm going to add 22 from the Jenkins security group. So we'll say, Allows Jenkins to do ssh. Yeah, that's all. Let's save this.
+Okay, credentials. Now I'm gonna say Add, Jenkins. So the user that we have created, DevOps, and the password, I will say silver-login, that's the ID. Same in the description. Okay, say Add.
+Now if you're doing key-based login, so what you can do is instead of username and password, select SSH Username with private key. So give the username that we use to log in.
+So we have Ubuntu machine, so that is the user and key. We can just store it here directly, private key. So this is the login key for your node, right? You can use this key. Right, that's the login key.
+So I use the Jenkins key to log in, right? Or if you're using your ssh-keygen and you generated key yourself and stored it into the machine, then you can use that key also. But I'm simply using the login key pair from AWS to show you how it works. Okay, I will give your name, silver-login-key.
+All right, so user is ubuntu because it's Ubuntu operating system. So we log in with this user and this key.
+Okay, let's say Add.
+So now you can choose the password-based login, or you can choose the key-based login, okay? Again, for this user, there is no ownership on the directory, right?
+For this exercise, just use the password-based login. I will show you the key-based login more in the upcoming sessions.
+Okay, now this option. Whenever you do SSH (indistinct) machine for the first time, it is going to store that machine's identity into known host file. And it'll ask you a question, whether you want to log in, yes or no, right? Whenever you do SSH first time. Now Jenkins is going to do SSH, and it's not going to answer to the question yes or no, right? It's not a human. So we are going to say here: Non verifying Verification Strategy. So don't verify for the SSH connection, just do the SSH. Okay, so these are the options. Let's now save this.
+Okay, you see the node, silver-node, click on that, and you can see log for more details. And you see it's trying to do SSH. Okay. So it says SSH keys is not being verified, and that is fine, authentication successful. And you should see agent successfully connected and online. Now if it is timing out, connection timed out, check the security group of your node of your slave. Is it allowing 22 from Jenkins? Or if you're getting permission denied, check the ownership of the directory. Authentication failure, check username, passwords, or do you have password-based login enable or not? And you should be able to add the node or the slave.
+Now it's up and running, and now we can use it.
+So I'm going to create some simple job to test it. I will just give this a test-slave. Just dial OK. Just to show you how it works.
+So, I'll just put some shell commands. I will say pwd, whoami, and also ls -ltr. Okay, let's save this.
+Now, I had selected, use this node as much as possible. So if I build now, there is a chance, job will run on the slave. And I'm saying there is a chance. Let's find out.
+Okay, let's see the console output. Building remotely on silver-node. That is what we wanted, right? You see, in the workspace, now workspace is in the slave. Check that. There's the workspace, right? You see pwd, where it is. You see whoami, devops user. It's using that devops user to log in, right? So you should see it in the slave node now. /opt/jenkins-slave.
+So you see an agent, actually. It's a JAR file. It extracted to this. There's an agent that makes the connection to the master, and you have the workspace. And in the workspace, you should have your jobs workspace directory. And there's nothing in that now.
+Okay, now, we did it on a chance, right? And it's going to execute.
+Now you want to be sure that my job runs only on this node. Then, you have to do two things. One, you can select Restrict where this project can be run. Okay, and you give the node name, okay? The label expression. And you say Save.
+Now, there is a guarantee that this job will run only on the silver-node. Okay, which is very helpful when you're running software testing or cross-platform builds, right?
+When you're not using for load distribution. But this node will be used for load distribution also. Yes, because we have given that in its use case.
+So if you want to disable automatic selection of this node, then you can configure this node back, and you can select Only build jobs with label expression matching this node.
+So now Jenkins will not select this node automatically, okay? Only if you give it in the job. Okay? So if I run any job, like Build job, this is not going to run it on silver-node now, okay?
+It's going to run it on master only. But let's say this, this Build-Test job,
+let's run it on the slave.
+Restrict, and let's give the node name. Now the tools.
+The silver-node should have Git. Silver-node should have Maven. But you know what? If I have Global Tool Configuration, right, I can select that Maven version. So it's going to install the Maven also, right?
+But if I set Default, then there is no Maven installed on the silver-node, right? And that should fail. Let's try that.
+And you see there is a failure. Let's see why the failure is, because it did not find Maven, right? Well, so you have two ways, right?
+You can log into the node, install Maven, or you can do it through Global Tool Configuration, right? One more benefit of Global Tool Configuration, right? Let's save and let's run it.
+Okay, now you've seen the console output. So it is downloading now Maven, extracting and using that Maven, and that Maven is stored in the slave now, okay? At this location. All right, so you've seen various use of nodes, and this is for the Linux node.
+Next session, we'll see how to add the Windows node.
+
