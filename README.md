@@ -9,7 +9,6 @@ The primary focus of this repository is to demonstrate how to automate various s
 - [Technologies Used](#technologies-used)
 - [Setup Instructions](#setup-instructions)
 - [Jenkins Pipeline Examples](#jenkins-pipeline-examples)
-- [Folder Structure](#folder-structure)
 - [Contributing](#contributing)
 
 ## About
@@ -100,18 +99,6 @@ node {
         sh 'make deploy'
     }
 }
-```
-
-## Folder Structure
-
-```bash
-.
-├── Jenkinsfile               # Pipeline script for Jenkins (Declarative/Scripted)
-├── Dockerfile                # Docker setup to run Jenkins
-├── docker-compose.yml        # Docker Compose configuration for Jenkins
-├── scripts/                  # Custom shell scripts used in pipelines
-├── src/                      # Example application code
-└── README.md                 # Project documentation
 ```
 
 ## Contributing
