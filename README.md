@@ -10,6 +10,7 @@ The primary focus of this repository is to demonstrate how to automate various s
 - [Setup Instructions](#setup-instructions)
 - [Jenkins Pipeline Examples](#jenkins-pipeline-examples)
 - [Contributing](#contributing)
+- [License](#license)
 
 ## About
 
@@ -110,3 +111,8 @@ Contributions are welcome! If you'd like to improve this repository or add more 
 3. Commit your changes (`git commit -m 'Add some feature'`)
 4. Push to the branch (`git push origin feature-branch`)
 5. Create a pull request
+
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
