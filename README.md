@@ -36,7 +36,6 @@ To use the repository locally and start Jenkins in a Docker container:
 1. **Clone the repository**:
    ```bash
    git clone https://github.com/shub0618/Jenkins_Prac.git
-   cd PipeLine_Codes
    ```
 
 2. **Installing Jenkins**:
